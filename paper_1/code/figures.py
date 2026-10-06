@@ -1,9 +1,15 @@
 """
-生成论文第 5 节的两张图（英文标注，与 main.tex 中的 ACL 排版一致）。
+生成论文的三张图（英文标注，与 main.tex 中的 ACL 排版一致）。
 
 图 1 model              引言的模型示意图：(a) 单层 ER 的最大连通分支，(b) 两层相互依赖的 MCGC
 图 2 giant_component    单层 ER 与两层相互依赖 ER 的 R(q)：模拟点 + 理论曲线
 图 3 phase_transition   M = 1..4 的 MCGC 曲线 S(q) 与各自的阈值 q_c
+
+连通分支一律用 percolation.py 里的 BFS 版本求解。这里试过把整个 Monte Carlo 批量张量化
+（torch 的“钩连+指针跳跃”并行连通分支，一次算完整批失效掩码），结论是本仓库规模下不划算：
+N <= 10^4、E <= 2*10^4 时一次 BFS 只要约 15 ms，而指针跳跃需要 30 轮全边扫描，逐样本提前
+退出后 figure1 只快 2%（16.4 s vs 16.8 s），figure2 反而慢 75%（2.1 s vs 1.2 s）。连通分支
+是典型的指针追逐型访存，数组框架的张量算子开销摊不开，没有算术强度可以复用。
 
 运行：python paper_1/code/figures.py
 输出：paper_1/figures/*.pdf 与 *.png
@@ -25,7 +31,7 @@ OUT = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "figures")
 
 
 def simulate_single_and_double(qs, runs=RUNS, N=N, c=C):
-    """对每个 q 做 runs 次独立实验，返回单层 R(q) 与两层 MCGC 比例的均值。"""
+    """第 5 节实验一：对每个 q 做 runs 次独立实验，返回单层 R(q) 与两层 MCGC 比例的均值。"""
 
     single, double = np.zeros(len(qs)), np.zeros(len(qs))
     for run in range(runs):
@@ -38,7 +44,7 @@ def simulate_single_and_double(qs, runs=RUNS, N=N, c=C):
 
 
 def simulate_mcgc(M, qs, runs=8, N=4000, c=6.0):
-    """M 层相互依赖网络的 MCGC 比例均值。"""
+    """第 5 节实验二：M 层相互依赖网络的 MCGC 比例均值。"""
 
     data = np.zeros(len(qs))
     for run in range(runs):
@@ -65,7 +71,7 @@ def figure1():
         ax.annotate(rf"$q_c={q_c:.3f}$", xy=(q_c, 0.99 if M == 2 else 0.86),
                     ha="center", va="top", color=color, fontsize=8)
     ax.set_xlabel(r"removed fraction $q$")
-    ax.set_ylabel(r"largest component ratio $R(q)$")
+    ax.set_ylabel(r"component fraction of $N$")
     ax.set(xlim=(0, Q_MAX), ylim=(0, 1.02))
     ax.legend(loc="lower left", frameon=False, fontsize=8)
     return fig, f"q_c = {q1:.2f} (single layer), {q2:.4f} (two layers)"
@@ -82,7 +88,7 @@ def figure2():
                  mew=0.8, color=f"C{M - 1}")
     ax.set(xlim=(0, 0.9), ylim=(-0.02, 1.02))
     ax.set_xlabel(r"removed fraction $q$")
-    ax.set_ylabel(r"MCGC fraction $S$")
+    ax.set_ylabel(r"MCGC fraction $S_{\mathrm{MCGC}}$")
     ax.legend(loc="lower left", ncol=2, columnspacing=0.8, fontsize=8, framealpha=1.0,
               facecolor="white", edgecolor="none")
     return fig, "y_c = " + ", ".join(f"M={M}: {y_critical(M):.4f}" for M in Ms)

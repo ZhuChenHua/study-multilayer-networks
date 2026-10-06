@@ -2,28 +2,24 @@
 \usepackage{acl}
 \usepackage{times}
 \usepackage{latexsym}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{microtype}
 \usepackage{amsmath,amssymb}
 \usepackage{graphicx}
-\usepackage{booktabs}
-\usepackage{url}
-
-\setcitestyle{numbers}   % 强制数字引用，解决 natbib 报错
-\bibpunct{[}{]}{,}{n}{}{,}   % 数字引用用方括号（acl.sty 把 \cite 定义为 \citep）
 
 \title{Giant Components under Random Failures: A Short Study from Single-Layer to Multilayer Networks}
 
 \author{Chenhua Zhu \\
-  QHNU \\
+  Qinghai Normal University \\
   \texttt{zhu.chenhua@qq.com} \\
-  \texttt{https://github.com/ZhuChenHua/study-multilayer-networks}}
-
-\date{}
+  \url{https://github.com/ZhuChenHua/study-multilayer-networks}}
 
 \begin{document}
 \maketitle
 
 \begin{abstract}
-  Understanding how networks remain connected under random failures is a central problem in network science. This short paper studies the basic concepts of connected components, the largest connected component, and the giant component under random attacks. We first review the generating-function formalism for single-layer networks and derive the classic ER (Erd\H{o}s--R\'enyi) result. We then move to multilayer interdependent networks, where the mutually connected giant component (MCGC) emerges through a discontinuous phase transition. Two small numerical experiments compare single-layer and multilayer ER networks, and the complete simulation code is available online.
+  Understanding how networks remain connected under random failures is a central problem in network science. This short paper studies the basic concepts of connected components, the largest connected component, and the giant component under random attacks. We first review the generating-function formalism for single-layer networks and derive the classic ER (Erd\H{o}s--R\'enyi) result. We then move to multilayer interdependent networks, where the mutually connected giant component (MCGC) emerges through a discontinuous phase transition once two or more layers are present. Two small numerical experiments compare a single-layer ER network with a two-layer interdependent one, and then ask how the number of layers shifts the transition point. The complete simulation code is available online.
 \end{abstract}
 
 \section{Introduction}
@@ -51,14 +47,16 @@ In the random failure model, each node is removed independently with probability
 \begin{equation}
   R(q) = \frac{|C_{\max}(G_q)|}{N},
 \end{equation}
-where $G_q$ is the remaining graph. We also use $S(q)$ to denote the giant component size relative to the original network.
+where $G_q$ is the remaining graph. We also write $S(q)$ for the same quantity when it is obtained from the generating-function formalism of Section~\ref{sec:single}; Section~\ref{sec:multi} reserves $S_{\mathrm{MCGC}}(q)$ for the multilayer case, so that the two are never confused.
 
-\section{Single-Layer Percolation}
+\section{Single-Layer Percolation}\label{sec:single}
 \subsection{Generating functions}
 For a configuration-model network with degree distribution $P(k)$, define the generating functions
 \begin{equation}
-  G_0(x)=\sum_k P(k)x^k,\qquad
-  G_1(x)=\sum_k \frac{kP(k)}{\langle k\rangle}x^{k-1}.
+\begin{aligned}
+  G_0(x)&=\sum_k P(k)x^k,\\
+  G_1(x)&=\sum_k \frac{kP(k)}{\langle k\rangle}x^{k-1}.
+\end{aligned}
 \end{equation}
 After random removal with probability $q$, let $u$ be the probability that a randomly chosen edge does not lead to the giant component. Then
 \begin{equation}
@@ -85,14 +83,17 @@ The critical point is
 \end{equation}
 For $q<q_c$, a giant component exists; for $q>q_c$, it disappears.
 
-\section{Multilayer Interdependent Networks}
-In a multiplex or interdependent network~\cite{buldyrev2010}, each node has a replica in every layer. A node is active only if it belongs to the giant component in all layers. The largest set of such nodes is called the \emph{mutually connected giant component} (MCGC).
+\section{Multilayer Interdependent Networks}\label{sec:multi}
+In a multiplex or interdependent network~\cite{buldyrev2010}, each node has a replica in every layer, and a node in one layer fails whenever its replica fails in another. The MCGC is the set of nodes that survive random removal and, in every layer, belong to one common connected cluster. It is obtained as the fixed point of an iteration: start from the survivors, and repeatedly replace the current set by the intersection, over all layers, of the largest connected component of that layer restricted to the current set. The iteration terminates when the set stops shrinking.
 
-Consider $M$ layers, each an ER network with average degree $c$. After random removal with probability $q$, the MCGC fraction $S$ satisfies
+Consider $M$ layers, each an ER network with average degree $c$. After random removal with probability $q$, the MCGC fraction $S_{\mathrm{MCGC}}$ satisfies
 \begin{equation}
-  S = p(1-e^{-cS})^M = (1-q)(1-e^{-cS})^M.
+\begin{aligned}
+  S_{\mathrm{MCGC}} &= p(1-e^{-cS_{\mathrm{MCGC}}})^M\\
+  &= (1-q)(1-e^{-cS_{\mathrm{MCGC}}})^M.
+\end{aligned}
 \end{equation}
-For $M=1$, this reduces to the single-layer ER result. For $M\ge 2$, the transition becomes discontinuous. The critical point is found by solving
+This is the single-layer expression with one factor of $\bigl(1-e^{-cS}\bigr)$ per layer, the exponent $M$ counting the independent connectivity requirements. Formally it takes the same form as $S=p(1-G_0(u))$ of Section~\ref{sec:single} with $1-e^{-cS_{\mathrm{MCGC}}}$ in the role of $1-G_0(u)$ and the $M$ connectivity conditions raised to a power; the result is the size of the largest fixed point, which is the one selected by the iteration above. For $M=1$, this reduces to the single-layer ER result. For $M\ge 2$, the transition becomes discontinuous. The critical point is found by solving
 \begin{equation}
   g_y(x)=x-y(1-e^{-x})^M=0,
   \qquad
@@ -116,7 +117,7 @@ Figure~\ref{fig:result} shows the results. The single-layer network exhibits a c
 \begin{figure}[t]
   \centering
   \includegraphics[width=\columnwidth]{figures/giant_component.pdf}
-  \caption{Largest connected component ratio $R(q)=|C_{\max}|/N$ under random failures, with $N=10{,}000$ and $c=4$. Markers: simulation; lines: theory. Single-layer ER network (blue) and two-layer interdependent ER network (red). The multilayer transition is discontinuous and occurs earlier.}
+  \caption{Under random failures with $N=10{,}000$ and $c=4$: the single-layer quantity $R(q)=|C_{\max}|/N$ (blue) and the two-layer MCGC fraction $S_{\mathrm{MCGC}}$ (red), which are different quantities drawn on a common axis. Markers: simulation; lines: theory. The multilayer transition is discontinuous and occurs earlier.}
   \label{fig:result}
 \end{figure}
 
@@ -125,12 +126,12 @@ The second simulation asks how the number of layers changes the transition. We g
 \begin{figure}[t]
   \centering
   \includegraphics[width=\columnwidth]{figures/phase_transition.pdf}
-  \caption{Effect of the number of layers, with $N=4{,}000$ and $c=6$. Markers: simulation; lines: theory; dashed lines: the thresholds $q_c=1-y_c/c$. The MCGC of $M\ge 2$ interdependent layers jumps from zero, at smaller $q$ as $M$ grows.}
+  \caption{Effect of the number of layers, with $N=4{,}000$ and $c=6$, showing the MCGC fraction $S_{\mathrm{MCGC}}$. Markers: simulation; lines: theory; dashed lines: the thresholds $q_c=1-y_c/c$. The MCGC of $M\ge 2$ interdependent layers jumps from zero, at smaller $q$ as $M$ grows.}
   \label{fig:layers}
 \end{figure}
 
 \section{Conclusion and Code}
-This paper studied the basics of random failures and giant components in single-layer and multilayer networks. The single-layer case is described by generating functions and the ER formula $S=(1-q)(1-e^{-cS})$. In multilayer interdependent networks, the MCGC follows $S=(1-q)(1-e^{-cS})^M$, and the transition becomes discontinuous for $M\ge 2$, with $y_c$ growing with $M$. The numerical experiments confirmed these predictions.
+This paper studied the basics of random failures and giant components in single-layer and multilayer networks. The single-layer case is described by generating functions and the ER formula $S=(1-q)(1-e^{-cS})$. In multilayer interdependent networks, the MCGC follows $S_{\mathrm{MCGC}}=(1-q)(1-e^{-cS_{\mathrm{MCGC}}})^M$, and the transition becomes discontinuous for $M\ge 2$, with $y_c$ growing with $M$. The numerical experiments confirmed these predictions.
 
 The complete simulation code, including network generation, random removal, BFS-based component detection, and plotting scripts, is available at
 \begin{center}
@@ -138,33 +139,31 @@ The complete simulation code, including network generation, random removal, BFS-
 \end{center}
 The model and the theory curves are implemented in \texttt{paper\_1/code/percolation.py}, and all three figures are produced by \texttt{paper\_1/code/figures.py}.
 
-Both experiments point to the same open question. What happens when the layers are no longer identical, or when only a fraction $\alpha$ of the nodes depend on their replicas? Partial dependence is known to replace the abrupt collapse by a continuous transition once the coupling exceeds a critical strength~\cite{parshani2010}, and the scripts above allow both regimes to be reached by changing a single parameter.
+Both experiments point to the same open question: what happens when the layers are no longer identical, or when only a fraction $\alpha$ of the nodes depend on their replicas? Partial dependence does change the nature of the transition: coupling above a critical value gives the abrupt first-order collapse derived above, whereas reducing the coupling below that value turns the transition into a continuous one~\cite{parshani2010}. Extending the scripts to this regime would require adding the partial-dependence rule itself, since the current model assumes that every node depends on its replica in every layer.
 
-\begin{thebibliography}{99}
-  \bibitem{newman2010}
-  M. E. J. Newman.
-  \newblock \emph{Networks: An Introduction}.
-  \newblock Oxford University Press, 2010.
+\section*{Limitations}
+The multilayer formula is derived for very large, simple networks, so for small networks it is slightly inaccurate near the threshold. We also assume that all layers are identical and that every node depends on its replica in every layer. The case where layers differ, or where only some nodes depend on their replicas, is not discussed here.
 
-  \bibitem{boccaletti2014}
-  S. Boccaletti, G. Bianconi, R. Criado, C. I. del Genio, J. G\'omez-Garde\~nes, M. Romance, I. Sendi\~na-Nadal, Z. Wang, and M. Zanin.
-  \newblock The structure and dynamics of multilayer networks.
-  \newblock \emph{Physics Reports}, 544(1):1--122, 2014.
+\bibliography{custom}
 
-  \bibitem{erdos1960}
-  P. Erd\H{o}s and A. R\'enyi.
-  \newblock On the evolution of random graphs.
-  \newblock \emph{Publications of the Mathematical Institute of the Hungarian Academy of Sciences}, 5:17--61, 1960.
+\appendix
+\section{Formula and Symbol Reference}
+The numbered equations and the symbols they use are collected here.
 
-  \bibitem{buldyrev2010}
-  S. V. Buldyrev, R. Parshani, G. Paul, H. E. Stanley, and S. Havlin.
-  \newblock Catastrophic cascade of failures in interdependent networks.
-  \newblock \emph{Nature}, 464(7291):1025--1028, 2010.
+\paragraph{Equations.}
+(1)~$C_{\max}=\arg\max_{C\in\mathcal C(G)}|C|$, the largest component; $\arg\max$ returns the component, not the size.
+(2)~$R(q)=|C_{\max}(G_q)|/N$, the measured giant-component fraction after removing a fraction~$q$.
+(3)~$G_0(x)=\sum_kP(k)x^k$ and $G_1(x)=\sum_k kP(k)x^{k-1}/\langle k\rangle$ are the node and edge generating functions.
+(4)~$u=q+pG_1(u)$ is the self-consistency equation for the probability~$u$ that an edge does not lead to the giant component.
+(5)~$S=p[1-G_0(u)]$ is the theoretical giant-component fraction.
+(6)~$G_0(x)=G_1(x)=e^{-c(1-x)}$ for an ER network of mean degree~$c$.
+(7)~$S=p(1-e^{-cS})=(1-q)(1-e^{-cS})$ is the single-layer ER equation; (8)~$p_c=1/c$ and $q_c=1-1/c$ are its critical points.
+(9)~$S_{\mathrm{MCGC}}=p(1-e^{-cS_{\mathrm{MCGC}}})^M=(1-q)(1-e^{-cS_{\mathrm{MCGC}}})^M$ generalizes (7) to $M$ interdependent layers.
+(10)~$g_y(x)=x-y(1-e^{-x})^M=0$ and $g_y'(x)=0$ determine the critical point, with $x=cS_{\mathrm{MCGC}}$ and $y=cp=c(1-q)$.
+(11)~$y_c=\max_{x>0}x/(1-e^{-x})^M$ is the critical parameter; its maximizer satisfies $e^{x_c}=1+Mx_c$.
+(12)~$q_c=1-y_c/c$ is the multilayer critical removal probability.
 
-  \bibitem{parshani2010}
-  R. Parshani, S. V. Buldyrev, and S. Havlin.
-  \newblock Interdependent networks: Reducing the coupling strength leads to a change from a first to second order percolation transition.
-  \newblock \emph{Physical Review Letters}, 105(4):048701, 2010.
-\end{thebibliography}
+\paragraph{Symbols.}
+$G=(V,E)$: undirected graph; $V$ nodes, $E$ edges; $N=|V|$: node count; $G[C]$: subgraph induced by~$C$; $C$: a connected component; $\mathcal C(G)$: set of all components; $C_{\max}$: largest component; $q$: removal probability; $p=1-q$: retention probability; $G_q$: remaining graph; $R(q)$: measured giant fraction; $S(q)$ and $S_{\mathrm{MCGC}}(q)$: theoretical giant fractions; $P(k)$: degree distribution; $k$: degree; $\langle k\rangle$: mean degree; $c$: ER mean degree; $G_0,G_1$: generating functions; $x$: their variable; $u$: probability an edge does not reach the giant component; $M$: number of layers; $y=cp$: rescaled control parameter; $g_y(x)$: auxiliary function; $x_c,y_c$: critical values; $p_c,q_c$: critical probabilities; $\alpha$: fraction of nodes depending on their replicas; $e$: base of the natural logarithm.
 
 \end{document}
