@@ -3,9 +3,10 @@
 """
 
 import os
+
 import torch
-from model import GCN
 from gen_data import make_data
+from model import GCN
 
 
 def main():

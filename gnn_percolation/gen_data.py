@@ -8,11 +8,12 @@
 import os
 import pickle
 import sys
-sys.path.append("E:\\project\\study-multilayer-networks\\paper_1\\code")
 
 import torch
 from torch_geometric.data import Data
-from percolation_lecture import largest_component # type: ignore
+
+sys.path.append("E:\\project\\study-multilayer-networks\\paper_1\\code")
+from percolation_lecture import largest_component
 
 _CORA = os.path.join(os.path.dirname(os.path.abspath(__file__)), "data", "Cora", "raw", "ind.cora.graph")
 # 手动下载：https://github.com/kimiyoung/planetoid/raw/master/data/ind.cora.graph

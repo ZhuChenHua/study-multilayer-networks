@@ -6,9 +6,10 @@ GNN 模型定义：基于 PyTorch Geometric 的标准 3 层 GCN。
 GCNConv 内部自动添加自环，无需手动处理邻接矩阵。
 """
 
-import torch.nn as nn
 import torch.nn.functional as F
+from torch import nn
 from torch_geometric.nn import GCNConv
+from torchinfo import summary
 
 
 class GCN(nn.Module):
@@ -27,3 +28,8 @@ class GCN(nn.Module):
         x = F.dropout(x, p=self.dropout, training=self.training)
         x = self.conv3(x, edge_index)
         return x  # (N, out_dim) logits
+
+
+if __name__ == "__main__":
+    model = GCN()
+    summary(model, input_data=[(2708, 3), (2, 10556)], depth=3)

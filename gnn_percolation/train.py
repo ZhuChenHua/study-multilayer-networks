@@ -3,10 +3,11 @@
 """
 
 import os
+
 import torch
 import torch.nn.functional as F
-from model import GCN
 from gen_data import make_data
+from model import GCN
 
 
 def main():
