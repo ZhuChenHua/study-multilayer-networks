@@ -12,7 +12,7 @@ sys.path.append("E:\\project\\study-multilayer-networks\\paper_1\\code")
 
 import torch
 from torch_geometric.data import Data
-from percolation_lecture import largest_component
+from percolation_lecture import largest_component # type: ignore
 
 _CORA = os.path.join(os.path.dirname(os.path.abspath(__file__)), "data", "Cora", "raw", "ind.cora.graph")
 
