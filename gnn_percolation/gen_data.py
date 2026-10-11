@@ -15,6 +15,8 @@ from torch_geometric.data import Data
 from percolation_lecture import largest_component # type: ignore
 
 _CORA = os.path.join(os.path.dirname(os.path.abspath(__file__)), "data", "Cora", "raw", "ind.cora.graph")
+# 手动下载：https://github.com/kimiyoung/planetoid/raw/master/data/ind.cora.graph
+# 放到 gnn_percolation/data/Cora/raw/ind.cora.graph
 
 
 def load_cora():
